@@ -19,7 +19,7 @@ public class VectorProcessingBenchmark {
     //1536 dimensions corresponding directly to modern models like OpenAI's text-embedding-3-small
     private static final int DIMENSIONS=1536;
 
-    private static void main(String[] args){
+    public static void main(String[] args){
         System.out.println(" JAVA VECTOR EMBEDDING MEMORY & LATENCY BENCHMARK  ");
         System.out.println("=====================================================\n");
         System.out.printf("simulating storage and processing of %d vectors(%d dimensions each)...%n%n",
@@ -35,7 +35,7 @@ public class VectorProcessingBenchmark {
         try{Thread.sleep(200);} catch(InterruptedException ignored){}
         //Memory benchmark-for refernce type vs primitive types
         long memBeforeObject=Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory();
-        long startObject=system.nanoTime();// latency benchmark
+        long startObject=System.nanoTime();// latency benchmark
         List<List<Float>> objectVectors=new ArrayList<>(VECTOR_COUNT);
         double objectDotProductSum = 0;
 
@@ -43,16 +43,16 @@ public class VectorProcessingBenchmark {
         for (int i=0;i<VECTOR_COUNT;i++){
             List<Float> vector= new ArrayList<>(DIMENSIONS);
             for(int d=0;d<DIMENSIONS;d++){
-                vector.add(float) (Math.random()* 2.0-1.0));
+                vector.add((float)(Math.random() * 2.0 - 1.0));
             }
             objectVectors.add(vector);
         }
         //Traversal & Processing Phase:Execute  Standard linear similarity computations
-        for(int=0; i< VECTOR_COUNT-1;i++){
+        for(int i = 0; i < VECTOR_COUNT-1;i++){
             objectDotProductSum += computeObjectDotProduct(objectVectors.get(i),objectVectors.get(i + 1));
 
         }
-        long endObject = system.nanoTime();
+        long endObject = System.nanoTime();
         long memAfterObject =Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory();
         double objectTimeMs=(endObject-startObject) /1_000_000.0;
         long objectMemkb=(memAfterObject-memBeforeObject)/1024;
@@ -60,7 +60,7 @@ public class VectorProcessingBenchmark {
         System.out.printf ("Execution latency : %.3f ms%n",objectTimeMs);
         System.out.printf("Heap Memory Used : %d KB%n",Math.max(0,objectMemkb));
         System.out.println("Mechanics     :Suffers from a 16-byte object header for every floating");
-        system.out.println("               point entry,pointer chasing,and heavy unboxing costs.");
+        System.out.println("               point entry,pointer chasing,and heavy unboxing costs.");
 
         //BENCHMARK 2:FLAT CONTIGOUS PRIMITIVE ARRAY LAYOUT (1D float[])
         // This should be implemented during ingestion,indexing and embedding of data in real production
@@ -74,17 +74,19 @@ public class VectorProcessingBenchmark {
         double primitiveDotProductSum = 0;
 
         //Allocation phase
-        for(i=0,i<primitiveVectors.length;i++){
-            primitiveVectors[i]=(float)(Math.random()*2.0-10);
+        for(int i = 0;i < primitiveVectors.length;i++){
+            primitiveVectors[i]=(float)(Math.random() * 2.0 - 1.0);
 
         }
         //Traversal & Processing phase:Parallel scan leveraging linear math offsets
-        for(int i=0;i<VECTOR_COUNT-1;i++){
-            primitiveDotProductSum +=computePrimitiveDotProduct(primitiveVectors,i,i+1);
+        for(int i = 0;i < VECTOR_COUNT-1; i++){
+            primitiveDotProductSum +=computePrimitiveDotProduct(primitiveVectors, i, i + 1);
         }
         long endPrimitive=System.nanoTime();
-        long memAfterPrimitive=Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory();
-        double primitiveMemKb=(memAfterPrimitive-memBeforePrimitive)/1024;
+        long memAfterPrimitive=Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+       
+        double primitiveTimeMs = (endPrimitive - startPrimitive) / 1_000_000.0;
+        long primitiveMemKb=(memAfterPrimitive-memBeforePrimitive) / 1024;
 
         System.out.println("---FLAT CONTIGOUS PRIMITIVE LAYOUT(1D float[])---");
         System.out.printf("Execution Latency : %.3f ms%n", primitiveTimeMs);
@@ -106,29 +108,29 @@ public class VectorProcessingBenchmark {
      * Calculates the vector dot  product via Standard List  objects.
      */
     private static double computeObjectDotProduct(List<Float> v1,List<Float> v2){
-        double dotProduduct = 0;
+        double dotProduct = 0;
         for (int i = 0; i< DIMENSIONS; i++) {
             //Implicit compiler cost: get(i).floatvalue()-unboxing creates massive CPU overhead
             // unboxing/boxing are cpu cycles wasted converting primitives(like int) to objects(like Integer)
             // So using Primitives types saves you from the unboxing and boxing CPU overheads which consume-
             // Memory and time.NB-Learn why we are looping through dimensions here
-            dotProduduct +=v1.get(i)*v2.get(i);
+            dotProduct +=v1.get(i)*v2.get(i);
         }
-        return dotProduduct;
+        return dotProduct;
     }
     /**
      * Calculates the vector dot product using explicit math offsets across a 1D primitive array.
      * Zero unboxing overheads here-notice that.
      */
     private static double computePrimitiveDotProduct(float[] array,int vec1Idx,int vec2Idx) {
-        double dotProduduct = 0;
+        double dotProduct = 0;
         int offset1= vec1Idx * DIMENSIONS;
         int offset2= vec2Idx * DIMENSIONS;
-        for (int i=0,i< DIMENSIONS;i++) {
+        for (int i = 0; i < DIMENSIONS; i++) {
             // Sequentially loads raw values  withouth objects or reference  dereferencing
             // You are not converting any Objects into primitives thus saving Memory and time-
             // due to cpu cycles during unboxing.
-        dotProduduct += array[offset1 + 1] * array[offset2 + 1];
+        dotProduct += array[offset1 + i] * array[offset2 + i];
         }
         return dotProduct;
         /**Points to note
@@ -140,22 +142,23 @@ public class VectorProcessingBenchmark {
          * procedural or functional programming.
          */
     }
-    private static void runPrimitiveVectorWarmup(){
+    private static void runObjectVectorWarmup(){
         List<List<Float>> warm = new ArrayList<>(2);// some warmup unboxing vector calculations
-        for(int i= 0; I < 2; i++){
-            List<Float> v = new ArrayList <>(5);
-            for(int d = 0; d<5;d++) v.add(0.0f);
+        for(int i= 0; i < 2; i++){
+            List<Float> v = new ArrayList <>(DIMENSIONS);
+            for(int d = 0; d<DIMENSIONS;d++) v.add(0.0f);
             warm.add(v);
         }
         computeObjectDotProduct(warm.get(0),warm.get(1));
     }
     private static void runPrimitiveVectorWarmup(){ //some warm up vector calculations-zero unboxing
-        float[] warm = new float[10];//easy to create,easy to run
-        computePrimitiveDotProduct(warm,0,1);
+        float[] warm = new float[2 * DIMENSIONS];//easy to create,easy to run
+        computePrimitiveDotProduct(warm, 0, 1);
     }
 }
 /**Some Java terminology reminders here
  * private,public and restricted stand for-
  * static Means-
  * void means-
+ * remember to run the two commands to run this file-javac and java
  */
