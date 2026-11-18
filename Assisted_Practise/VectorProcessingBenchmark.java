@@ -1,4 +1,4 @@
-package com.llm.performace;
+package com.llm.performance;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,7 +84,7 @@ public class VectorProcessingBenchmark {
         }
         long endPrimitive=System.nanoTime();
         long memAfterPrimitive=Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-       
+
         double primitiveTimeMs = (endPrimitive - startPrimitive) / 1_000_000.0;
         long primitiveMemKb=(memAfterPrimitive-memBeforePrimitive) / 1024;
 
