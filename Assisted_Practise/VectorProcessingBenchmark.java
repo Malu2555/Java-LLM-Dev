@@ -158,7 +158,8 @@ public class VectorProcessingBenchmark {
 }
 /**Some Java terminology reminders here
  * private,public and restricted stand for-
- * static Means-
- * void means-
+ * static Means-something belongs to the class itself rather than a specific object.
+ * void means-a method does its job without returning any data back to you.
+ * So basically Void is the opposite of return types like Int,String etc
  * remember to run the two commands to run this file-javac and java
  */
